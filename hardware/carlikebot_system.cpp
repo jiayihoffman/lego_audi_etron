@@ -1,16 +1,48 @@
-// Copyright 2021 ros2_control Development Team
+// Copyright (c) 2026 Jiayi Hoffman. All rights reserved
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
+// The hardware components realize communication to physical hardware and represent its abstraction in the 
+// ros2_control framework. The components have to be exported as plugins and the Resource Manager dynamically
+// loads those plugins and manages their lifecycle.
 //
-//     http://www.apache.org/licenses/LICENSE-2.0
+// There are three basic types of components: Actuator, Sensor and System. 
+// System: Complex (multi-DOF) robotic hardware like industrial robots.
+// Actuator: Simple (1 DOF) robotic hardware like motors, valves, and similar. An actuator implementation is related to only one joint. 
+// Sensor: Robotic hardware is used for sensing its environment. 
 //
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// The ros2_control framework provides a set of hardware interface types that can be used to implement a hardware component 
+// for a specific robot or device: Joints, Sensors, GPIOs
+// Joints: 
+// <joint>-tag groups the interfaces associated with the joints of physical robots and actuators. 
+// They have command and state interfaces to set the goal values for hardware and read its current state.
+// The State interfaces of joints can be published as a ROS topic by means of the joint_state_broadcaster
+// 
+// <ros2_control name="RRBotSystemMutipleGPIOs" type="system">
+//  <hardware>
+//    <plugin>ros2_control_demo_hardware/RRBotSystemPositionOnlyHardware</plugin>
+//    <param name="example_param_hw_start_duration_sec">2.0</param>
+//    <param name="example_param_hw_stop_duration_sec">3.0</param>
+//    <param name="example_param_hw_slowdown">2.0</param>
+//  </hardware>
+//  <joint name="joint1">
+//    <command_interface name="position">
+//      <param name="min">-1</param>
+//      <param name="max">1</param>
+//    </command_interface>
+//    <state_interface name="position"/>
+//  </joint>
+//  <gpio name="flange_digital_IOs">
+//    <command_interface name="digital_output1"/>
+//    <state_interface name="digital_output1"/>    <!-- Needed to know current state of the output -->
+//    <command_interface name="digital_output2"/>
+//    <state_interface name="digital_output2"/>
+//    <state_interface name="digital_input1"/>
+//    <state_interface name="digital_input2"/>
+//  </gpio>
+// </ros2_control>
+// 
+// References:
+// https://control.ros.org/humble/doc/ros2_control/hardware_interface/doc/hardware_interface_types_userdoc.html
+// https://control.ros.org/humble/doc/ros2_control/hardware_interface/doc/writing_new_hardware_component.html
 
 #include "audi_etron/carlikebot_system.hpp"
 
@@ -23,11 +55,14 @@
 #include <sstream>
 #include <vector>
 
+#include "audi_etron/lego_motor_controller.hpp"
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
 #include "rclcpp/rclcpp.hpp"
 
 namespace audi_etron
 {
+
+// initialize all member variables and process the parameters from the info argument
 hardware_interface::CallbackReturn CarlikeBotSystemHardware::on_init(
   const hardware_interface::HardwareInfo & info)
 {
@@ -140,11 +175,40 @@ hardware_interface::CallbackReturn CarlikeBotSystemHardware::on_init(
     }
   }
 
-  // // BEGIN: This part here is for exemplary purposes - Please do not copy to your production
-  // code
-  hw_start_sec_ = std::stod(info_.hardware_parameters["example_param_hw_start_duration_sec"]);
-  hw_stop_sec_ = std::stod(info_.hardware_parameters["example_param_hw_stop_duration_sec"]);
-  // // END: This part here is for exemplary purposes - Please do not copy to your production code
+
+  // Motor scaling parameters (with defaults if not specified)
+  if (info_.hardware_parameters.find("max_traction_power") != info_.hardware_parameters.end()) {
+    max_traction_power_ = std::stod(info_.hardware_parameters["max_traction_power"]);
+  } else {
+    max_traction_power_ = 80.0;  // Default to 80% max power
+  }
+
+  if (info_.hardware_parameters.find("max_steering_power") != info_.hardware_parameters.end()) {
+    max_steering_power_ = std::stod(info_.hardware_parameters["max_steering_power"]);
+  } else {
+    max_steering_power_ = 50.0;  // Default to 50% max power for steering
+  }
+
+  if (info_.hardware_parameters.find("max_traction_velocity") != info_.hardware_parameters.end()) {
+    max_traction_velocity_ = std::stod(info_.hardware_parameters["max_traction_velocity"]);
+  } else {
+    max_traction_velocity_ = 25.0;  // Default max velocity (rad/s), corresponds to ~1.25 m/s with 0.05m wheel radius
+  }
+
+  if (info_.hardware_parameters.find("max_steering_position") != info_.hardware_parameters.end()) {
+    max_steering_position_ = std::stod(info_.hardware_parameters["max_steering_position"]);
+  } else {
+    max_steering_position_ = 0.4;  // Default max steering position (rad), matches URDF joint limit
+  }
+
+  if (info_.hardware_parameters.find("hub_name") != info_.hardware_parameters.end()) {
+    hub_name_ = info_.hardware_parameters["hub_name"];
+  } else {
+    hub_name_ = "Technic";  // Default hub name pattern
+  }
+
+  // Initialize LEGO motor controller
+  lego_motor_controller_ = std::make_unique<LegoMotorController>(get_logger());
 
   hw_interfaces_["steering"] = Joint("virtual_front_wheel_joint");
 
@@ -211,15 +275,17 @@ CarlikeBotSystemHardware::export_command_interfaces()
   return command_interfaces;
 }
 
+// Implement the on_activate method where hardware "power" is enabled.
 hardware_interface::CallbackReturn CarlikeBotSystemHardware::on_activate(
   const rclcpp_lifecycle::State & /*previous_state*/)
 {
-  RCLCPP_INFO(get_logger(), "Activating ...please wait...");
+  RCLCPP_INFO(get_logger(), "Activating hardware...");
 
-  for (auto i = 0; i < hw_start_sec_; i++)
-  {
-    rclcpp::sleep_for(std::chrono::seconds(1));
-    RCLCPP_INFO(get_logger(), "%.1f seconds left...", hw_start_sec_ - i);
+  // Connect to LEGO Technic Hub
+  RCLCPP_INFO(get_logger(), "Connecting to LEGO Technic Hub...");
+  if (!lego_motor_controller_->connect(hub_name_)) {
+    RCLCPP_ERROR(get_logger(), "Failed to connect to LEGO Technic Hub");
+    return hardware_interface::CallbackReturn::ERROR;
   }
 
   for (auto & joint : hw_interfaces_)
@@ -238,6 +304,9 @@ hardware_interface::CallbackReturn CarlikeBotSystemHardware::on_activate(
     }
   }
 
+  // Ensure all motors are stopped initially
+  lego_motor_controller_->stop_all_motors();
+
   RCLCPP_INFO(get_logger(), "Successfully activated!");
 
   return hardware_interface::CallbackReturn::SUCCESS;
@@ -246,15 +315,19 @@ hardware_interface::CallbackReturn CarlikeBotSystemHardware::on_activate(
 hardware_interface::CallbackReturn CarlikeBotSystemHardware::on_deactivate(
   const rclcpp_lifecycle::State & /*previous_state*/)
 {
-  // BEGIN: This part here is for exemplary purposes - Please do not copy to your production code
-  RCLCPP_INFO(get_logger(), "Deactivating ...please wait...");
+  RCLCPP_INFO(get_logger(), "Deactivating hardware...");
 
-  for (auto i = 0; i < hw_stop_sec_; i++)
-  {
-    rclcpp::sleep_for(std::chrono::seconds(1));
-    RCLCPP_INFO(get_logger(), "%.1f seconds left...", hw_stop_sec_ - i);
+  // Stop all motors before disconnecting
+  if (lego_motor_controller_ && lego_motor_controller_->is_connected()) {
+    RCLCPP_INFO(get_logger(), "Stopping all motors...");
+    lego_motor_controller_->stop_all_motors();
+    rclcpp::sleep_for(std::chrono::milliseconds(100));  // Give time for commands to be sent
+
+    // Disconnect from hub
+    RCLCPP_INFO(get_logger(), "Disconnecting from LEGO Technic Hub...");
+    lego_motor_controller_->disconnect();
   }
-  // END: This part here is for exemplary purposes - Please do not copy to your production code
+
   RCLCPP_INFO(get_logger(), "Successfully deactivated!");
 
   return hardware_interface::CallbackReturn::SUCCESS;
@@ -263,52 +336,59 @@ hardware_interface::CallbackReturn CarlikeBotSystemHardware::on_deactivate(
 hardware_interface::return_type CarlikeBotSystemHardware::read(
   const rclcpp::Time & /*time*/, const rclcpp::Duration & period)
 {
-  // BEGIN: This part here is for exemplary purposes - Please do not copy to your production code
-
+  // Open-loop operation: Echo commands as states (no sensor feedback)
+  
+  // Steering position: echo command as state
   hw_interfaces_["steering"].state.position = hw_interfaces_["steering"].command.position;
 
+  // Traction velocity: echo command as state
   hw_interfaces_["traction"].state.velocity = hw_interfaces_["traction"].command.velocity;
+  
+  // Integrate velocity to estimate position for odometry (open-loop estimation)
   hw_interfaces_["traction"].state.position +=
     hw_interfaces_["traction"].state.velocity * period.seconds();
-
-  std::stringstream ss;
-  ss << "Reading states:";
-
-  ss << std::fixed << std::setprecision(2) << std::endl
-     << "\t"
-     << "position: " << hw_interfaces_["steering"].state.position << " for joint '"
-     << hw_interfaces_["steering"].joint_name.c_str() << "'" << std::endl
-     << "\t"
-     << "position: " << hw_interfaces_["traction"].state.position << " for joint '"
-     << hw_interfaces_["traction"].joint_name.c_str() << "'" << std::endl
-     << "\t"
-     << "velocity: " << hw_interfaces_["traction"].state.velocity << " for joint '"
-     << hw_interfaces_["traction"].joint_name.c_str() << "'";
-
-  RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 500, "%s", ss.str().c_str());
-
-  // END: This part here is for exemplary purposes - Please do not copy to your production code
 
   return hardware_interface::return_type::OK;
 }
 
-hardware_interface::return_type audi_etron ::CarlikeBotSystemHardware::write(
+hardware_interface::return_type audi_etron::CarlikeBotSystemHardware::write(
   const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/)
 {
-  // BEGIN: This part here is for exemplary purposes - Please do not copy to your production code
-  std::stringstream ss;
-  ss << "Writing commands:";
+  // Check if motor controller is connected
+  if (!lego_motor_controller_ || !lego_motor_controller_->is_connected()) {
+    RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 1000, "LEGO motor controller not connected");
+    return hardware_interface::return_type::OK;
+  }
 
-  ss << std::fixed << std::setprecision(2) << std::endl
-     << "\t"
-     << "position: " << hw_interfaces_["steering"].command.position << " for joint '"
-     << hw_interfaces_["steering"].joint_name.c_str() << "'" << std::endl
-     << "\t"
-     << "velocity: " << hw_interfaces_["traction"].command.velocity << " for joint '"
-     << hw_interfaces_["traction"].joint_name.c_str() << "'";
+  // Convert steering position command to motor power
+  double steering_command = hw_interfaces_["steering"].command.position;
+  // Scale steering position (-max_steering_position to max_steering_position) to power (-max_steering_power to max_steering_power)
+  double steering_power_raw = 0.0;
+  if (max_steering_position_ > 0.0) {
+    steering_power_raw = (steering_command / max_steering_position_) * max_steering_power_;
+  }
+  // Clamp to valid range
+  steering_power_raw = std::max(-max_steering_power_, std::min(max_steering_power_, steering_power_raw));
+  int8_t steering_power = static_cast<int8_t>(std::round(steering_power_raw));
+  
+  // Send steering command to PORT_D
+  lego_motor_controller_->set_motor_power(LegoPort::PORT_D, steering_power);
 
-  RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 500, "%s", ss.str().c_str());
-  // END: This part here is for exemplary purposes - Please do not copy to your production code
+  // Convert traction velocity command to motor power
+  double traction_velocity = hw_interfaces_["traction"].command.velocity;
+  // Scale velocity (-max_traction_velocity to max_traction_velocity) to power (-max_traction_power to max_traction_power)
+  double traction_power_raw = 0.0;
+  if (max_traction_velocity_ > 0.0) {
+    traction_power_raw = (traction_velocity / max_traction_velocity_) * max_traction_power_;
+  }
+  // Clamp to valid range
+  traction_power_raw = std::max(-max_traction_power_, std::min(max_traction_power_, traction_power_raw));
+  int8_t traction_power = static_cast<int8_t>(std::round(traction_power_raw));
+
+  // Send traction commands to PORT_A and PORT_B (both wheels)
+  lego_motor_controller_->set_motor_power(LegoPort::PORT_A, traction_power);
+  lego_motor_controller_->set_motor_power(LegoPort::PORT_B, traction_power);
+
 
   return hardware_interface::return_type::OK;
 }

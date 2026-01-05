@@ -1,16 +1,4 @@
-// Copyright 2021 ros2_control Development Team
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Copyright (c) 2026 Jiayi Hoffman. All rights reserved
 
 #ifndef AUDI_ETRON__CARLIKEBOT_SYSTEM_HPP_
 #define AUDI_ETRON__CARLIKEBOT_SYSTEM_HPP_
@@ -35,6 +23,8 @@
 
 namespace audi_etron
 {
+// Forward declaration
+class LegoMotorController;
 struct JointValue
 {
   double position{0.0};
@@ -93,10 +83,6 @@ public:
   rclcpp::Clock::SharedPtr get_clock() const { return clock_; }
 
 private:
-  // Parameters for the CarlikeBot simulation
-  double hw_start_sec_;
-  double hw_stop_sec_;
-
   // Objects for logging
   std::shared_ptr<rclcpp::Logger> logger_;
   rclcpp::Clock::SharedPtr clock_;
@@ -104,6 +90,16 @@ private:
   // std::vector<std::tuple<std::string, double, double>>
   //   hw_interfaces_;  // name of joint, state, command
   std::map<std::string, Joint> hw_interfaces_;
+
+  // LEGO motor controller
+  std::unique_ptr<LegoMotorController> lego_motor_controller_;
+
+  // Motor scaling parameters (convert ROS commands to LEGO motor power -100 to 100)
+  double max_traction_power_;   // Maximum power for traction motors (0-100)
+  double max_steering_power_;   // Maximum power for steering motor (0-100)
+  double max_traction_velocity_; // Maximum velocity command (for scaling)
+  double max_steering_position_; // Maximum steering position (for scaling)
+  std::string hub_name_;         // Hub name pattern to search for
 };
 
 }  // namespace audi_etron
