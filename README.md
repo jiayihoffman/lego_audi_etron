@@ -6,7 +6,7 @@
 Find the documentation in [doc/userdoc.rst](doc/userdoc.rst) or on [control.ros.org](https://control.ros.org/master/doc/ros2_control_demos/example_11/doc/userdoc.html).
 
 ## Build and Test
-run this in the `lego_ws` directory. The test requires "ros2_control_demo_testing" package to be copied to the workspace. 
+run this in the `lego_ws` directory. The test requires "ros2_control_demo_testing" package to be copied to the workspace directory. 
 ```
 colcon build
 source install/setup.bash 
@@ -15,6 +15,7 @@ colcon test
 ```
 
 ## Quick Play:
+Run the robot and view it in **RViz**
 
 ```
 # view the robot
@@ -25,8 +26,10 @@ ros2 launch audi_etron carlikebot.launch.py remap_odometry_tf:=true
 
 ros2 control list_hardware_interfaces
 ros2 control list_controllers
+```
 
-# send a command for the car to circling in *RViz*
+Send a command for the car to circling in RViz
+```
 ros2 topic pub --rate 30 /bicycle_steering_controller/reference geometry_msgs/msg/TwistStamped "
 twist:
    linear:
