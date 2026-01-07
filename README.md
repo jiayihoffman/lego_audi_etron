@@ -8,6 +8,8 @@ Find the documentation in [doc/userdoc.rst](doc/userdoc.rst) or on [control.ros.
 ## Build and Test
 run this in the `lego_ws` directory. The test requires "ros2_control_demo_testing" package to be copied to the workspace directory. 
 ```
+pip install bleak
+
 colcon build
 source install/setup.bash 
 
