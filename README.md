@@ -5,8 +5,6 @@
 
 Find the documentation in [doc/userdoc.rst](doc/userdoc.rst) or on [control.ros.org](https://control.ros.org/master/doc/ros2_control_demos/example_11/doc/userdoc.html).
 
-## Uses CMake as the build system
-The hardware components uses CMake to install and find packages. On the other hand, the Lego Hub uses Python Bluetooth library `bleak` to communicate with software applications. Therefore, we use `ament_cmake_python` that combines CMake build system with Python package installation, which means we don't need setup.py and setup.cfg, required in a pure Python package (ament_python).
 
 ## Build
 
@@ -20,8 +18,12 @@ docker build -t audi_etron_image .
 ### Standard
 if not using Docker, follow these instruction:
 
-1. `pip install bleak` before running the robot.
-2. run this in the `lego_ws` directory. The test requires "ros2_control_demo_testing" package to be copied to the workspace directory. 
+1. Build and Install `SimpleBLE`, which provides Bluetooth support for the LEGO hub. 
+* https://simpleble.readthedocs.io/en/latest/overview.html
+* build instruction is at "Build_SimpleBLE.md"
+2. build the ROS2 packages in the `lego_ws` directory. 
+* The test requires "ros2_control_demo_testing" package to be copied from "ros2_control_demos" to the workspace directory. 
+
 ```
 colcon build
 source install/setup.bash 
@@ -35,19 +37,22 @@ Run the robot and view it in **RViz**
 ### Docker
 
 ```
-docker run -it --rm --network=host --ipc=host -v /dev:/dev \
+docker run -it --rm --network=host \
     -v /var/run/dbus:/var/run/dbus \
     audi_etron_image
 ```
 
 About D-Bus socket mount: 
-bleak uses D-Bus to communicate with BlueZ. `-v /var/run/dbus:/var/run/dbus` allows bleak to communicate with the BlueZ daemon via D-Bus. Without this mount, the container can't access the host's D-Bus socket.
+SimpleBLE uses D-Bus to communicate with BlueZ. `-v /var/run/dbus:/var/run/dbus` allows SimpleBLE to communicate with the BlueZ daemon via D-Bus. Without this mount, the container can't access the host's D-Bus socket.
 
 ### Standard
 
 ```
 # view the robot
 ros2 launch audi_etron view_robot.launch.py
+
+# "-d" for ros2 launch in the debug log level
+ros2 launch audi_etron view_robot.launch.py -d
 
 # Start the robot
 ros2 launch audi_etron carlikebot.launch.py remap_odometry_tf:=true

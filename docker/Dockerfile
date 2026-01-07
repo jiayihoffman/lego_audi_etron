@@ -2,7 +2,7 @@ FROM ros:humble-perception
 
 ARG ROS_DISTRO=humble
 
-# Install essential utilities
+# Install essential utilities and build dependencies
 RUN apt-get update && apt-get install -y \
     vim \
     python3-pip \
@@ -16,6 +16,11 @@ RUN apt-get update && apt-get install -y \
     ros-${ROS_DISTRO}-slam-toolbox \
     ros-${ROS_DISTRO}-rosbridge-suite \
     bluez \
+    build-essential \
+    cmake \
+    git \
+    pkg-config \
+    libdbus-1-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Create "ros" user and group
@@ -37,13 +42,26 @@ RUN groupadd --gid ${USER_GID} ${USERNAME} \
   && useradd -s /bin/bash --uid ${USER_UID} --gid ${USER_GID} -m ${USERNAME} -d ${BOT_HOME} \
   && chown -R ${USER_UID}:${USER_GID} ${BOT_HOME}
     
-RUN usermod -a -G dialout ${USERNAME}
+RUN usermod -a -G dialout,bluetooth ${USERNAME}
+
+# Build and install SimpleBLE (required for LEGO motor control)
+# SimpleBLE is not available in standard Linux package repositories
+# Must be done as root before switching to ros user for system-wide installation
+RUN cd /tmp \
+  && git clone https://github.com/OpenBluetoothToolbox/SimpleBLE.git \
+  && cd SimpleBLE/simpleble \
+  && mkdir build && cd build \
+  && cmake .. -DCMAKE_BUILD_TYPE=Release \
+  && cmake --build . --parallel \
+  && cmake --install . \
+  && ldconfig \
+  && cd / && rm -rf /tmp/SimpleBLE
 
 # the rest of the command run as ros
 USER ros
 
 # Create the ROS 2 workspace
-RUN mkdir -p ${BOT_HOME}/lego_ws/src 
+RUN mkdir -p ${BOT_HOME}/lego_ws/src
 
 # download the rplidar source code
 RUN cd ${BOT_HOME}/lego_ws/src \

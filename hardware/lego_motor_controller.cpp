@@ -36,11 +36,10 @@ public:
       adapter_ = adapters[0];
       RCLCPP_INFO(logger, "Using adapter: %s", adapter_.identifier().c_str());
 
-      // Enable the adapter
+      // Check if Bluetooth is enabled
       if (!adapter_.bluetooth_enabled()) {
-        RCLCPP_INFO(logger, "Enabling Bluetooth...");
-        adapter_.bluetooth_enable();
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        RCLCPP_ERROR(logger, "Bluetooth is not enabled. Please enable Bluetooth in system settings.");
+        return false;
       }
 
       // Scan for devices
@@ -116,8 +115,8 @@ public:
       }
 
       auto services = peripheral_.services();
-      for (const auto & service : services) {
-        for (const auto & characteristic : service.characteristics()) {
+      for (auto & service : services) {
+        for (auto & characteristic : service.characteristics()) {
           if (characteristic.uuid() == UART_CHAR_UUID) {
             peripheral_.write_request(service.uuid(), characteristic.uuid(), data);
             return true;

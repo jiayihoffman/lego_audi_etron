@@ -16,7 +16,9 @@
   <buildtool_depend>ament_cmake_python</buildtool_depend>
 
   <depend>hardware_interface</depend>
-  <depend>rclpy</depend>
+  <depend>pluginlib</depend>
+  <depend>rclcpp</depend>
+  <depend>rclcpp_lifecycle</depend>
 
   <exec_depend>bicycle_steering_controller</exec_depend>
   <exec_depend>controller_manager</exec_depend>
@@ -36,5 +38,6 @@
 
   <export>
     <build_type>ament_cmake</build_type>
+    <ros2_control plugin="${prefix}/audi_etron.xml"/>
   </export>
 </package>
