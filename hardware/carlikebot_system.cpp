@@ -1,4 +1,16 @@
-// Copyright (c) 2026 Jiayi Hoffman. All rights reserved
+// Copyright (c) 2026 Jiayi Hoffman. 
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 //
 // The hardware components realize communication to physical hardware and represent its abstraction in the 
 // ros2_control framework. The components have to be exported as plugins and the Resource Manager dynamically
@@ -32,7 +44,7 @@
 //  </joint>
 //  <gpio name="flange_digital_IOs">
 //    <command_interface name="digital_output1"/>
-//    <state_interface name="digital_output1"/>    <!-- Needed to know current state of the output -->
+//    <state_interface name="digital_output1"/>    <!-- current state of the output -->
 //    <command_interface name="digital_output2"/>
 //    <state_interface name="digital_output2"/>
 //    <state_interface name="digital_input1"/>

@@ -2,15 +2,11 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>audi_etron</name>
-  <version>0.0.0</version>
-  <description>`ros2_control` hardware for a carlike robot with two wheels in front that steer and two wheels in the back that drive.</description>
+  <version>0.0.1</version>
+  <description>`ros2_control` hardware for LEGO Audi RS Q e-tron (Technic #42160).</description>
 
-  <maintainer email="denis.stogl@stoglrobotics.de">Dr.-Ing. Denis Štogl</maintainer>
-  <maintainer email="bence.magyar.robotics@gmail.com">Bence Magyar</maintainer>
-  <maintainer email="christoph.froehlich@ait.ac.at">Christoph Froehlich</maintainer>
-
-  <author email="kermani.areza@gmail.com">Reza Kermani</author>
-
+  <maintainer email="jiayi.hoffman@modularmachines.ai">Jiayi Hoffman</maintainer>
+  <author email="jiayi.hoffman@modularmachines.ai">Jiayi Hoffman</author>
   <license>Apache-2.0</license>
 
   <buildtool_depend>ament_cmake_python</buildtool_depend>
