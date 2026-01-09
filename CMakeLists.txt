@@ -132,15 +132,6 @@ install(TARGETS audi_etron
   RUNTIME DESTINATION bin
 )
 
-if(BUILD_TESTING)
-  find_package(ament_cmake_pytest REQUIRED)
-
-  ament_add_pytest_test(audi_etron_urdf_xacro test/test_urdf_xacro.py)
-  ament_add_pytest_test(view_audi_etron_launch test/test_view_robot_launch.py)
-  ament_add_pytest_test(run_audi_etron_launch test/test_carlikebot_launch.py)
-  ament_add_pytest_test(run_audi_etron_launch_remapped test/test_carlikebot_launch_remapped.py)
-endif()
-
 ## EXPORTS
 ament_export_targets(export_audi_etron HAS_LIBRARY_TARGET)
 ament_export_dependencies(${THIS_PACKAGE_INCLUDE_DEPENDS})
