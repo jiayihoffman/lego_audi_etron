@@ -89,6 +89,7 @@ def generate_launch_description():
         remappings=[
             ("~/robot_description", "/robot_description"),
             ("/bicycle_steering_controller/tf_odometry", "/tf"),
+            ("/bicycle_steering_controller/reference", "/cmd_vel"),
         ],
         condition=IfCondition(remap_odometry_tf),
     )
