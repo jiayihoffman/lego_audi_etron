@@ -33,13 +33,15 @@ Run the robot and view it in **RViz** and in the real world.
 ### Docker
 Start the audi_etron docker container:
 ```
-docker run -it --rm --network=host \
+docker run -it --rm --network=host --privileged \
     -v /var/run/dbus:/var/run/dbus \
     audi_etron_image
 ```
 
-About D-Bus socket mount: 
-SimpleBLE uses D-Bus to communicate with BlueZ. `-v /var/run/dbus:/var/run/dbus` allows SimpleBLE to communicate with the BlueZ daemon via D-Bus. Without this mount, the container can't access the host's D-Bus socket.
+About D-Bus and Bluetooth access:
+- `--privileged`: Required to bypass AppArmor restrictions and access D-Bus/Bluetooth hardware
+- `-v /var/run/dbus:/var/run/dbus`: Mounts the host's D-Bus socket so SimpleBLE can communicate with BlueZ
+- SimpleBLE uses D-Bus to communicate with the BlueZ daemon for Bluetooth Low Energy operations
 
 ### Local
 
@@ -72,7 +74,6 @@ twist:
       x: 0.0
       y: 0.0
       z: 0.8"
-
 ```
 
 To use a joystick (gamepad) to control the robot, launch the teleop_twist_joy node.
@@ -83,5 +84,6 @@ Each gamepad has an enable button. Press it while twisting the joystick to contr
 # Install the ROS2 teleop-twist-joy package
 sudo apt install ros-${ROS_DISTRO}-teleop-twist-joy
 
+# launch the teleop-twist-joy 
 ros2 launch teleop_twist_joy teleop-launch.py joy_config:='ps3' publish_stamped_twist:=true
 ```
