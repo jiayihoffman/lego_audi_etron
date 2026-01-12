@@ -32,7 +32,7 @@ ENV BOT_HOME=/home/${USERNAME}
 
 # Copy SSH key and configure permissions
 RUN mkdir -p ${BOT_HOME}/.ssh && chmod 700 ${BOT_HOME}/.ssh
-COPY id_rsa ${BOT_HOME}/.ssh/id_rsa
+COPY docker/id_rsa ${BOT_HOME}/.ssh/id_rsa
 RUN ssh-keyscan github.com >> ${BOT_HOME}/.ssh/known_hosts
 
 RUN groupadd --gid ${USER_GID} ${USERNAME} \
@@ -54,7 +54,7 @@ RUN cd /tmp \
   && ldconfig \
   && cd / && rm -rf /tmp/SimpleBLE
 
-COPY start_robot.sh ${BOT_HOME}/start_robot.sh
+COPY docker/start_robot.sh ${BOT_HOME}/start_robot.sh
 RUN chmod +x ${BOT_HOME}/start_robot.sh
 
 # the rest of the command run as ros
@@ -81,10 +81,10 @@ RUN echo "export ROS_DOMAIN_ID=4" >> ~/.bashrc \
   && echo "source ${BOT_HOME}/lego_ws/install/setup.bash" >> ~/.bashrc
 
 # install python dependencies
-COPY requirements.txt ${BOT_HOME}/requirements.txt
+COPY docker/requirements.txt ${BOT_HOME}/requirements.txt
 RUN python3 -m pip install --user --no-cache-dir --no-compile -r ${BOT_HOME}/requirements.txt
     
 # Set default working directory
 WORKDIR ${BOT_HOME}/lego_ws
 
-CMD ["/bin/bash", "-c", "${BOT_HOME}/start_robot.sh"]
+# CMD ["/bin/bash", "-c", "${BOT_HOME}/start_robot.sh"]

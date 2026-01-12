@@ -9,11 +9,14 @@ For more information about the ROS2 Bicycle Steering Controller, please see the 
 ## Build
 
 ### Docker
-The Docker image provides a ROS2 environment with all dependencies. To build the Docker image, use the command:
+The Docker image provides a ROS2 environment with all dependencies. To build the Docker image, use this command. 
 
 ```
-docker build -t audi_etron_image .
+docker build -t audi_etron .
 ```
+
+Note: I could not build the image on the Raspberry Pi due to limited compute resource. I had to build the image on my Linux dev machine, push the image to the Docker Hub, and pull the image onto the Pi. Therefore, I created the script for build and push. 
+`./scripts/publish-docker.sh`. 
 
 ### Local
 if not using Docker, follow these instructions to build the package:
@@ -28,14 +31,23 @@ source install/setup.bash
 ```
 
 ## Quick Play:
-Run the robot and view it in **RViz** and in the real world.
+Run the robot and view it in **RViz** and in the real world. 
 
 ### Docker
-Start the audi_etron docker container:
+Turn on the Lego Hub, and immediately start the audi_etron docker container:
+
 ```
-docker run -it --rm --network=host --privileged \
-    -v /var/run/dbus:/var/run/dbus \
-    audi_etron_image
+# start the robot docker container. Checks the local repository first. If not exist, pull the image from the Docker Hub. 
+./scripts/start_robot.sh
+
+# use `--pull` flag to force the pull. Use this flag when the image has been updated in the Docker hub.
+./scripts/start_robot.sh --pull
+```
+
+View the robot in RViz on the Linux dev machine. Make sure the `ROS_DOMAIN_ID` environment variable on the dev machine matches the one set on the robot. This parameter controls who can access the data published by the robot running on the Raspberry Pi.
+
+```
+ros2 launch audi_etron view_robot_rviz2.launch.py
 ```
 
 About D-Bus and Bluetooth access:
@@ -46,13 +58,13 @@ About D-Bus and Bluetooth access:
 ### Local
 
 ```
-# view the robot
+# view the robot in RViz
 ros2 launch audi_etron view_robot.launch.py
 
 # "-d" for ros2 launch in the debug log level
 ros2 launch audi_etron view_robot.launch.py -d
 
-# Start the robot
+# Turn on the Lego Hub, and start the robot with RViz (default: gui:=true)
 ros2 launch audi_etron carlikebot.launch.py remap_odometry_tf:=true
 
 ros2 control list_hardware_interfaces

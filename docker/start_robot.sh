@@ -8,8 +8,8 @@ echo "Starting rosbridge_server..."
 ros2 launch rosbridge_server rosbridge_websocket_launch.xml &
 ROSBRIDGE_PID=$!
 
-echo "Starting robot launch..."
-ros2 launch audi_etron carlikebot.launch.py remap_odometry_tf:=true &
+echo "Starting robot launch (without GUI for Docker)..."
+ros2 launch audi_etron carlikebot.launch.py gui:=false remap_odometry_tf:=true &
 ROBOT_PID=$!
 
 echo "ROS2 services started. PIDs: rosbridge=$ROSBRIDGE_PID, robot=$ROBOT_PID"
