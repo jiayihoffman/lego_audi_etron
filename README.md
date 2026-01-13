@@ -38,10 +38,10 @@ Turn on the Lego Hub, and immediately start the audi_etron docker container:
 
 ```
 # start the robot docker container. Checks the local repository first. If not exist, pull the image from the Docker Hub. 
-./scripts/start_robot.sh
+./scripts/start-robot.sh
 
-# use `--pull` flag to force the pull. Use this flag when the image has been updated in the Docker hub.
-./scripts/start_robot.sh --pull
+# use `--pull` flag to force the pull. Use it when the image has been updated in the Docker hub.
+./scripts/start-robot.sh --pull
 ```
 
 View the robot in RViz on the Linux dev machine. Make sure the `ROS_DOMAIN_ID` environment variable on the dev machine matches the one set on the robot. This parameter controls who can access the data published by the robot running on the Raspberry Pi.
