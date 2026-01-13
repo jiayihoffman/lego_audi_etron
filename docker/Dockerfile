@@ -87,4 +87,4 @@ RUN python3 -m pip install --user --no-cache-dir --no-compile -r ${BOT_HOME}/req
 # Set default working directory
 WORKDIR ${BOT_HOME}/lego_ws
 
-# CMD ["/bin/bash", "-c", "${BOT_HOME}/start_robot.sh"]
+CMD ["/bin/bash", "-c", "${BOT_HOME}/start_robot.sh"]
