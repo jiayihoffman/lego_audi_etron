@@ -49,6 +49,11 @@ docker login
 ./scripts/start-robot.sh --pull
 ```
 
+To examine the Docker container's directory structure, we can use `docker run` to get an interactive shell in the container without starting the robot
+```bash
+docker run -it --rm  <image_name> /bin/bash
+```
+
 About Docker container's D-Bus and Bluetooth access:
 - `--privileged`: Required to bypass AppArmor restrictions and access D-Bus/Bluetooth hardware
 - `-v /var/run/dbus:/var/run/dbus`: Mounts the host's D-Bus socket so SimpleBLE can communicate with BlueZ

@@ -30,11 +30,6 @@ ARG USER_GID=${USER_UID}
 
 ENV BOT_HOME=/home/${USERNAME}
 
-# Copy SSH key and configure permissions
-RUN mkdir -p ${BOT_HOME}/.ssh && chmod 700 ${BOT_HOME}/.ssh
-COPY docker/id_rsa ${BOT_HOME}/.ssh/id_rsa
-RUN ssh-keyscan github.com >> ${BOT_HOME}/.ssh/known_hosts
-
 RUN groupadd --gid ${USER_GID} ${USERNAME} \
   && useradd -s /bin/bash --uid ${USER_UID} --gid ${USER_GID} -m ${USERNAME} -d ${BOT_HOME} \
   && chown -R ${USER_UID}:${USER_GID} ${BOT_HOME}
@@ -67,8 +62,10 @@ RUN mkdir -p ${BOT_HOME}/lego_ws/src
 RUN cd ${BOT_HOME}/lego_ws/src \
   && git clone -b ros2 https://github.com/Slamtec/rplidar_ros.git
 
-RUN cd ${BOT_HOME}/lego_ws/src \
-  && git clone -b humble git@github.com:jiayihoffman/audi_etron.git
+# Copy local audi_etron repository to the workspace
+COPY --chown=${USER_UID}:${USER_GID} . ${BOT_HOME}/lego_ws/src/audi_etron
+# Remove the docker directory from the workspace (not needed in the container)
+RUN rm -rf ${BOT_HOME}/lego_ws/src/audi_etron/docker
 
 # Source ROS 2 env and build the rplidar, and audi_etron hardware.
 RUN /bin/bash -c "source /opt/ros/humble/setup.bash \
@@ -79,10 +76,6 @@ RUN /bin/bash -c "source /opt/ros/humble/setup.bash \
 RUN echo "export ROS_DOMAIN_ID=4" >> ~/.bashrc \
   && echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc \
   && echo "source ${BOT_HOME}/lego_ws/install/setup.bash" >> ~/.bashrc
-
-# install python dependencies
-COPY docker/requirements.txt ${BOT_HOME}/requirements.txt
-RUN python3 -m pip install --user --no-cache-dir --no-compile -r ${BOT_HOME}/requirements.txt
     
 # Set default working directory
 WORKDIR ${BOT_HOME}/lego_ws

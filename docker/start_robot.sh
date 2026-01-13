@@ -1,6 +1,8 @@
 #!/bin/bash
 # Source ROS 2 environment
-source /home/ros/.bashrc
+source /opt/ros/humble/setup.bash
+source /home/ros/lego_ws/install/setup.bash
+export ROS_DOMAIN_ID=4
 
 echo "Starting robot launch (without GUI for Docker)..."
 ros2 launch audi_etron lego_audi_etron.launch.py gui:=false remap_odometry_tf:=true &
