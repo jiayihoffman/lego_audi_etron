@@ -13,11 +13,11 @@ fi
 
 # Image configuration
 # Can be overridden by environment variable or command line argument
-IMAGE_NAME="${1:-${DOCKER_IMAGE_NAME:-audi_etron_image}}"
+IMAGE_NAME="${1:-${DOCKER_IMAGE_NAME:-lego_audi_etron}}"
 
 # If DOCKERHUB_USERNAME is set and image doesn't contain a slash, use Docker Hub format
 if [ -z "$1" ] && [ -n "$DOCKERHUB_USERNAME" ] && [[ ! "$IMAGE_NAME" =~ / ]]; then
-    IMAGE_NAME="${DOCKERHUB_USERNAME}/audi_etron:latest"
+    IMAGE_NAME="${DOCKERHUB_USERNAME}/lego_audi_etron:latest"
 fi
 
 echo "=========================================="

@@ -11,7 +11,7 @@ if [ -z "$DOCKERHUB_USERNAME" ]; then
 fi
 
 # Image configuration
-IMAGE_NAME="audi_etron"
+IMAGE_NAME="lego_audi_etron"
 IMAGE_TAG="latest"
 FULL_IMAGE_NAME="${DOCKERHUB_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}"
 

@@ -1,29 +1,60 @@
-# Audi RS Q e-tron
+# LEGO Technic Audi RS Q e-tron
 
-LEGO Audi RS Q e-tron (Technic #42160) is a mobile robot with two front wheels for steering and two rear wheels for forward and backward motion. 
+LEGO Technic Audi RS Q e-tron 42160 is a model of the 2022 Audi RS Q e-tron Dakar rally car. It features many realistic details, including individual suspension on each of the car’s 4 wheels and new Technic wheel elements created specifically for this model to reflect the full-sized Audi’s wheel design.
 
-Because each pair of wheels (steering and traction) is controlled by a single interface, a bicycle steering controller is used, in which two joints, virtual_rear_wheel_joint and virtual_front_wheel_joint, are controlled to drive the carlike robot. 
+Like a real-world car, the model has two front wheels for steering and two rear wheels for forward and backward motion. It is powered by three Control+ motors with the Technic Hub that has 4 ports
+
+## ROS2 Control of LEGO Technic Audi RS Q e-tron
+This project creates a ROS2 control hardware implementation for the LEGO Technic Audi RS Q e-tron. 
+
+### What is ROS2 Control
+
+ros2_control is a robot control framework in ROS 2 that provides a hardware abstraction layer for controlling robot actuators, sensors, and hardware interfaces in a modular and efficient way. 
+
+ros2_control enhances performance and offers real-time capabilities rather than multiple processes collaborating through messages and topics. Besides, it promotes standardization and modular robot control. It supports various hardware interfaces through the hardware abstraction layer and enables a seamless transition between simulated and different hardware implementations with little code change. 
+
+Developers can reuse existing controllers instead of writing their own from scratch. In fact, much of the robot control logic has already been developed by others, so the pre-built ROS2 controllers can be utilized as is in most use cases.
+
+Controller Manager is the main component of the ros2_control framework. It manages the lifecycle of controllers, provides access to hardware interfaces, and offers services to the ROS-echo system.
+
+### Controllers for Wheeled Mobile Robots
+
+For wheeled mobile robots, ros2_control framework offers the following controllers. 
+* Differential Drive Controller: 
+   * Controller for mobile robots with differential drive, which has two wheels, each of which is driven independently.
+* Steering Controllers Library
+   * Bicycle - with one steering and one drive joints;
+   * Tricylce - with one steering and two drive joints;
+   * Ackermann - with two steering and two drive joints.
+* Mecanum Drive Controllers: 
+   * Controller for mobile robot with four mecanum wheels allowing the robot to move sideways, spin, and drive in any direction by controlling each wheel independently. 
+
+### Bicycle Steering Controllers for Car-like robot
+The car-like robot, such as the LEGO Audi RS Q e-tron, has steerable front wheels and rear wheels that move forward and backward. Each pair of wheels (steering and traction) is controlled by a single interface. 
+
+Therefore, a bicycle steering controller is used for the car-like robot, in which two joints, virtual_rear_wheel_joint and virtual_front_wheel_joint, are controlled to drive the car-like robot. 
 
 For more information about the ROS2 Bicycle Steering Controller, please see the documentation on [control.ros.org](https://control.ros.org/humble/doc/ros2_controllers/doc/mobile_robot_kinematics.html#car-like-bicycle-model) and [steering_controllers](https://control.ros.org/humble/doc/ros2_controllers/steering_controllers_library/doc/userdoc.html#steering-controllers-library-userdoc). The second article provides information on the controller's parameters and subscribed/published topics. 
 
 ## Build
+To build the project, we support Docker and a local Linux environment. 
 
 ### Docker
-The Docker image provides a ROS2 environment with all dependencies. To build the Docker image, use this command. 
+The Docker image provides a ROS2 environment with all dependencies. To build the Docker image, use this command: 
 
 ```bash
-docker build -t audi_etron .
+docker build -t lego_audi_etron .
 ```
 
-Note: I could not build the image on the Raspberry Pi due to limited compute resources. I had to build the image on my Linux dev machine, push it to the Docker Hub, and pull it onto the Pi. Therefore, I created a script for building and pushing: 
+Note: I could not build the image on the Raspberry Pi due to limited compute resources. I had to build the image on my Linux dev machine, push it to the Docker Hub, and pull it onto the Pi. Therefore, I created a script for building and pushing the docker image: 
 `./scripts/publish-docker.sh`. 
 
 ### Local
-if not using Docker, follow these instructions to build the package:
+if not using Docker, follow these instructions to build the package on the Linux machine:
 
 1. Build and install `SimpleBLE`, which provides Bluetooth support for the LEGO hub and motors.
 * The source code for SimpleBLE is at: https://simpleble.readthedocs.io/en/latest/overview.html
-* For the build and installation instructions, please check [Build_SimpleBLE.md](./Build_SimpleBLE.md)
+* For the library's build and installation instructions, please see [Build_SimpleBLE.md](./Build_SimpleBLE.md)
 2. build the audi_etron ROS2 package in the workspace directory. 
    ```bash
    colcon build --packages-select=audi_etron
@@ -31,12 +62,13 @@ if not using Docker, follow these instructions to build the package:
    ```
 
 ## Quick Play:
-Run the robot and view it in **RViz** and in the real world. 
+
+Run the robot and view it in **RViz** and in the real world. Similar to the build, we support running the robot in Docker and a local Linux environment.
 
 ### Docker
 
 #### Start the robot
-Turn on the LEGO Hub, and immediately start the "audi_etron" docker container. The container's launch file loads and starts the robot hardware and controllers.
+Turn on the LEGO Hub, and immediately start the "lego_audi_etron" docker container. The container's launch file loads and starts the robot hardware and controllers.
 
 ```bash
 ./scripts/start-robot.sh
@@ -49,7 +81,7 @@ docker login
 ./scripts/start-robot.sh --pull
 ```
 
-To examine the Docker container's directory structure, we can use `docker run` to get an interactive shell in the container without starting the robot
+To inspect the Docker container's directory structure, we can use `docker run` to get an interactive shell in the container without starting the robot
 ```bash
 docker run -it --rm  <image_name> /bin/bash
 ```
@@ -79,7 +111,7 @@ ros2 launch audi_etron view_robot.launch.py -d
 ```
 
 ### Hardware Interfaces and Controllers
-Let's introspect the control system before driving the robot:
+Commands to introspect the control system before driving the robot:
 
 1. Check if the hardware interfaces are loaded properly:
    ```bash
