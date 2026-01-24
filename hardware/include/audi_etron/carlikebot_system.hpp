@@ -111,6 +111,7 @@ private:
   double max_steering_power_;   // Maximum power for steering motor (0-100)
   double max_traction_velocity_; // Maximum velocity command (for scaling)
   double max_steering_position_; // Maximum steering position (for scaling)
+  double steering_deadzone_;    // Deadzone threshold for steering (rad) - commands within this are forced to zero  
   std::string hub_name_;         // Hub name pattern to search for
 };
 

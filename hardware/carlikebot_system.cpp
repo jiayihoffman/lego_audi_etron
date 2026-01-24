@@ -213,6 +213,12 @@ hardware_interface::CallbackReturn CarlikeBotSystemHardware::on_init(
     max_steering_position_ = 0.4;  // Default max steering position (rad), matches URDF joint limit
   }
 
+  if (info_.hardware_parameters.find("steering_deadzone") != info_.hardware_parameters.end()) {
+    steering_deadzone_ = std::stod(info_.hardware_parameters["steering_deadzone"]);
+  } else {
+    steering_deadzone_ = 0.05;  // Default deadzone (rad) - ~2.9 degrees, forces center when command is very small
+  }
+
   if (info_.hardware_parameters.find("hub_name") != info_.hardware_parameters.end()) {
     hub_name_ = info_.hardware_parameters["hub_name"];
   } else {
@@ -374,6 +380,12 @@ hardware_interface::return_type audi_etron::CarlikeBotSystemHardware::write(
 
   // Convert steering position command to motor power
   double steering_command = hw_interfaces_["steering"].command.position;
+  
+  // Apply deadzone: if command is within deadzone threshold, force to zero to actively center steering
+  if (std::abs(steering_command) < steering_deadzone_) {
+    steering_command = 0.0;
+  }
+  
   // Scale steering position (-max_steering_position to max_steering_position) to power (-max_steering_power to max_steering_power)
   double steering_power_raw = 0.0;
   if (max_steering_position_ > 0.0) {
@@ -383,8 +395,8 @@ hardware_interface::return_type audi_etron::CarlikeBotSystemHardware::write(
   steering_power_raw = std::max(-max_steering_power_, std::min(max_steering_power_, steering_power_raw));
   int8_t steering_power = static_cast<int8_t>(std::round(steering_power_raw));
   
-  // Send steering command to PORT_D
-  lego_motor_controller_->set_motor_power(LegoPort::PORT_D, steering_power);
+  // Send steering command to PORT_D (negate to fix opposite direction)
+  lego_motor_controller_->set_motor_power(LegoPort::PORT_D, -steering_power);
 
   // Convert traction velocity command to motor power
   double traction_velocity = hw_interfaces_["traction"].command.velocity;

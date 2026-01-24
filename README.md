@@ -74,7 +74,7 @@ Turn on the LEGO Hub, and immediately start the "lego_audi_etron" docker contain
 ./scripts/start-robot.sh
 ```
 
-Use the --pull flag to force a pull of the image from the Docker Hub repository. Use the "pull" option when the image has been updated on the hub. If the image is private, log in to Docker Hub first.
+Use the --pull flag to force a pull of the image from the Docker Hub repository if the image has been updated on the hub. If the image is private, use `docker login` to log into the Docker Hub first.
 
 ```bash
 docker login
@@ -164,10 +164,10 @@ twist:
 
 To use a joystick (gamepad) controlling the robot, launch the `teleop_twist_joy` node.
 
-Each gamepad has an enable button. Press it while twisting the joystick to control the robot. On the PS5, it is the "PS" button between the two joysticks.  
+Each gamepad has an enable button. Press it while twisting the joystick to control the robot. On the PS5, it is the "PS" button.  
 
 ```bash
-# Install the ROS2 teleop-twist-joy package
+# Install the ROS2 teleop-twist-joy package if have not already installed
 sudo apt install ros-${ROS_DISTRO}-teleop-twist-joy
 
 # launch the teleop-twist-joy 

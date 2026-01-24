@@ -9,7 +9,9 @@
         <!-- LEGO Motor Control Parameters -->
         <!-- Maximum power for traction motors (0-100), default 80  -->
         <param name="max_traction_power">80.0</param>
-        <!-- Maximum power for steering motor (0-100), default 50-->
+        <!-- Maximum power for steering motor (0-100), default 50. 
+             Caps the motor power sent to the steering motor since steering needs smooth, 
+             precise control, not maximum power.-->
         <param name="max_steering_power">50.0</param>
         <!-- Maximum velocity command for scaling (rad/s), default 25.0
              Corresponds to ~1.0 m/s linear velocity with 0.04m wheel radius (25 rad/s * 0.04m = 1.0 m/s) -->
@@ -17,6 +19,10 @@
         <!-- Maximum steering position for scaling (rad), default 0.4 (~22.9 degrees)
              Must match URDF joint limits. Turning radius at max ~0.57m (wheelbase 0.24m) -->
         <param name="max_steering_position">0.4</param>
+        <!-- Steering deadzone threshold (rad), default 0.05 (~2.9 degrees)
+             Commands within this threshold are forced to zero to actively center steering
+             Smaller values = more sensitive, larger values = less sensitive -->
+        <param name="steering_deadzone">0.05</param>
         <!-- Hub name pattern to search for during BLE scan, default "Technic" -->
         <param name="hub_name">Technic</param>
       </hardware>
