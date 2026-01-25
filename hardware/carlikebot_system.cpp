@@ -378,6 +378,9 @@ hardware_interface::return_type audi_etron::CarlikeBotSystemHardware::write(
     return hardware_interface::return_type::OK;
   }
 
+  // Convert traction velocity command to motor power (needed to determine direction for steering)
+  double traction_velocity = hw_interfaces_["traction"].command.velocity;
+
   // Convert steering position command to motor power
   double steering_command = hw_interfaces_["steering"].command.position;
   
@@ -395,11 +398,13 @@ hardware_interface::return_type audi_etron::CarlikeBotSystemHardware::write(
   steering_power_raw = std::max(-max_steering_power_, std::min(max_steering_power_, steering_power_raw));
   int8_t steering_power = static_cast<int8_t>(std::round(steering_power_raw));
   
-  // Send steering command to PORT_D (negate to fix opposite direction)
-  lego_motor_controller_->set_motor_power(LegoPort::PORT_D, -steering_power);
-
-  // Convert traction velocity command to motor power
-  double traction_velocity = hw_interfaces_["traction"].command.velocity;
+  // Negate steering only when moving backward or stationary (forward motion doesn't need negation)
+  // When velocity > 0 (forward): negate (to fix opposite direction)
+  // When velocity <= 0 (backward/stationary): don't negate (steering is already correct)
+  int8_t steering_power_to_send = (traction_velocity > 0.0) ? -steering_power : steering_power;
+  
+  // Send steering command to PORT_D
+  lego_motor_controller_->set_motor_power(LegoPort::PORT_D, steering_power_to_send);
   // Scale velocity (-max_traction_velocity to max_traction_velocity) to power (-max_traction_power to max_traction_power)
   double traction_power_raw = 0.0;
   if (max_traction_velocity_ > 0.0) {
