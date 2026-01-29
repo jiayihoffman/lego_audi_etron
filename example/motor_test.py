@@ -59,13 +59,13 @@ async def main():
 
         await asyncio.sleep(1.5)
 
-        print("Steer left")
+        print("Steer right")
         await client.write_gatt_char(UART_CHAR_UUID, start_power(PORT_D, 25), response=False)
-        await asyncio.sleep(0.5)   # tweak this value
+        await asyncio.sleep(0.5)   
 
         print("Return to center")
         await client.write_gatt_char(UART_CHAR_UUID, start_power(PORT_D, -25), response=False)
-        await asyncio.sleep(0.3)   # must match the above
+        await asyncio.sleep(0.3)   
 
         # Stop everything
         print("Stopping motors")

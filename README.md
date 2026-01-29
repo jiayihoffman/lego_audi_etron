@@ -2,10 +2,10 @@
 
 LEGO Technic Audi RS Q e-tron 42160 is a model of the 2022 Audi RS Q e-tron Dakar rally car. It features many realistic details, including individual suspension on each of the car’s 4 wheels and new Technic wheel elements created specifically for this model to reflect the full-sized Audi’s wheel design.
 
-Like a real-world car, the model has two front wheels for steering and two rear wheels for forward and backward motion. It is powered by three Control+ motors with the Technic Hub that has 4 ports
+Like a real-world car, the LEGO Audi e-tron has front-wheel steering and all-wheel drive. It is powered by three Control+ motors, connected to the ports of the Technic Hub.
 
 ## ROS2 Control of LEGO Technic Audi RS Q e-tron
-This project creates a ROS2 control hardware implementation for the LEGO Technic Audi RS Q e-tron. 
+This project creates a ros2_control hardware component for the LEGO Technic Audi RS Q e-tron. 
 
 ### What is ROS2 Control
 
@@ -19,25 +19,25 @@ Controller Manager is the main component of the ros2_control framework. It manag
 
 ### Controllers for Wheeled Mobile Robots
 
-For wheeled mobile robots, ros2_control framework offers the following controllers. 
+For wheeled mobile robots, ros2_control framework offers the following types of controllers. 
 * Differential Drive Controller: 
    * Controller for mobile robots with differential drive, which has two wheels, each of which is driven independently.
-* Steering Controllers Library
+* Steering Controllers:
    * Bicycle - with one steering and one drive joints;
    * Tricylce - with one steering and two drive joints;
    * Ackermann - with two steering and two drive joints.
 * Mecanum Drive Controllers: 
    * Controller for mobile robot with four mecanum wheels allowing the robot to move sideways, spin, and drive in any direction by controlling each wheel independently. 
 
-### Bicycle Steering Controllers for Car-like robot
-The car-like robot, such as the LEGO Audi RS Q e-tron, has steerable front wheels and rear wheels that move forward and backward. Each pair of wheels (steering and traction) is controlled by a single interface. 
+### Bicycle Steering Controllers for LEGO Audi RS Q e-tron
+This LEGO Audi RS Q e-tron is a car-like robot. It has steerable front wheels and all-wheel drive. The two front wheels work together to steer the car, and all wheels provide the same traction and forward and backward motion to drive the car.
 
-Therefore, a bicycle steering controller is used for the car-like robot, in which two joints, virtual_rear_wheel_joint and virtual_front_wheel_joint, are controlled to drive the car-like robot. 
+This resembles the Bicycle Steering model. Therefore, a bicycle steering controller is used for this LEGO car, utilizing two joints, virtual_rear_wheel_joint and virtual_front_wheel_joint, to control its movement.
 
-For more information about the ROS2 Bicycle Steering Controller, please see the documentation on [control.ros.org](https://control.ros.org/humble/doc/ros2_controllers/doc/mobile_robot_kinematics.html#car-like-bicycle-model) and [steering_controllers](https://control.ros.org/humble/doc/ros2_controllers/steering_controllers_library/doc/userdoc.html#steering-controllers-library-userdoc). The second article provides information on the controller's parameters and subscribed/published topics. 
+For more information about the ROS2 Steering Controller, please see the documentation on [control.ros.org](https://control.ros.org/humble/doc/ros2_controllers/doc/mobile_robot_kinematics.html) and [steering_controllers](https://control.ros.org/humble/doc/ros2_controllers/steering_controllers_library/doc/userdoc.html#steering-controllers-library-userdoc). The second article provides detailed information on the controller's command and state interfaces, parameters, and subscribed and published topics. 
 
 ## Build
-To build the project, we support Docker and a local Linux environment. 
+To build the project, we support Docker or a local Linux environment. 
 
 ### Docker
 The Docker image provides a ROS2 environment with all dependencies. To build the Docker image, use this command: 
@@ -46,7 +46,7 @@ The Docker image provides a ROS2 environment with all dependencies. To build the
 docker build -t lego_audi_etron .
 ```
 
-Note: I could not build the image on the Raspberry Pi due to limited compute resources. I had to build the image on my Linux dev machine, push it to the Docker Hub, and pull it onto the Pi. Therefore, I created a script for building and pushing the docker image: 
+Note: I could not build the Docker image on the Raspberry Pi due to limited compute resources for building the SimpleBLE C++ library. I had to build the image on my Linux dev machine, push it to the Docker Hub, and pull it onto the Pi. Therefore, I created a script for building and pushing the docker image: 
 `./scripts/publish-docker.sh`. 
 
 ### Local
@@ -55,7 +55,7 @@ if not using Docker, follow these instructions to build the package on the Linux
 1. Build and install `SimpleBLE`, which provides Bluetooth support for the LEGO hub and motors.
 * The source code for SimpleBLE is at: https://simpleble.readthedocs.io/en/latest/overview.html
 * For the library's build and installation instructions, please see [Build_SimpleBLE.md](./Build_SimpleBLE.md)
-2. build the audi_etron ROS2 package in the workspace directory. 
+2. build the audi_etron ROS2 package in the ROS workspace directory. 
    ```bash
    colcon build --packages-select=audi_etron
    source install/setup.bash 
@@ -63,18 +63,19 @@ if not using Docker, follow these instructions to build the package on the Linux
 
 ## Quick Play:
 
-Run the robot and view it in **RViz** and in the real world. Similar to the build, we support running the robot in Docker and a local Linux environment.
+Run the robot in the real world and view it in **RViz**. RViz is a 3D visualizer for the ROS framework, used to display sensor data (LiDAR, cameras), robot models (URDF), and system states in real-time.
+
+As with the build, we support running the robot as a Docker container or in a local Linux environment.
 
 ### Docker
 
-#### Start the robot
 Turn on the LEGO Hub, and immediately start the "lego_audi_etron" docker container. The container's launch file loads and starts the robot hardware and controllers.
 
 ```bash
 ./scripts/start-robot.sh
 ```
 
-Use the --pull flag to force a pull of the image from the Docker Hub repository if the image has been updated on the hub. If the image is private, use `docker login` to log into the Docker Hub first.
+Use the --pull flag to force a pull of the image from the Docker Hub repository if the image has been updated in the hub. If the image is private, use `docker login` to log into the Docker Hub first.
 
 ```bash
 docker login
@@ -91,16 +92,17 @@ About Docker container's D-Bus and Bluetooth access:
 - `-v /var/run/dbus:/var/run/dbus`: Mounts the host's D-Bus socket so SimpleBLE can communicate with BlueZ
 - SimpleBLE uses D-Bus to communicate with the BlueZ daemon for Bluetooth Low Energy operations
 
-#### Visualization
+#### Visualization in RViz
 
-To view the robot in RViz, I use my Linux dev machine. The `ROS_DOMAIN_ID` environment variable must be the same between the dev machine and the docker. It controls who can access the data published by the robot running in the docker.
+To view the robot in RViz, I use my Linux dev machine. The `ROS_DOMAIN_ID` environment variable must be the same on the dev machine and in the container. This variable controls who can access the robot's published data and which set of ROS2 applications can interact with each other. If you cannot see the robot in RViz but the robot is running, please check that the `ROS_DOMAIN_ID` variable is set correctly. 
 
 ```bash
 ros2 launch audi_etron view_robot_rviz2.launch.py
 ```
 
 ### Local
-Turn on the LEGO Hub, and start the robot with RViz. The launch file loads and starts the robot hardware, controllers and opens RViz.
+
+Turn on the LEGO Hub, and start the robot with RViz on the Linux machine. The launch file loads and starts the robot hardware, controllers and opens RViz.
 ```bash
 ros2 launch audi_etron lego_audi_etron.launch.py remap_odometry_tf:=true
 ```
@@ -111,7 +113,7 @@ ros2 launch audi_etron view_robot.launch.py -d
 ```
 
 ### Hardware Interfaces and Controllers
-Commands to introspect the control system before driving the robot:
+Commands to introspect the control system before driving the robot use the joystick
 
 1. Check if the hardware interfaces are loaded properly:
    ```bash
@@ -137,7 +139,7 @@ Commands to introspect the control system before driving the robot:
    ros2 control list_controllers
    ```
 
-   We should see:
+   We should see this:
    ```
    joint_state_broadcaster     joint_state_broadcaster/JointStateBroadcaster          active
    bicycle_steering_controller bicycle_steering_controller/BicycleSteeringController  active
@@ -145,7 +147,7 @@ Commands to introspect the control system before driving the robot:
 
 ### Send commands for the car to circling
 
-If everything is fine, now we can send commands to drive the robot. 
+If everything is fine, now we can send commands to drive the LEGO car. 
 
 Here is a quick command that publishes the stamped twist messages to the robot's /cmd_vel topic.  
 
@@ -162,7 +164,7 @@ twist:
       z: 0.8"
 ```
 
-To use a joystick (gamepad) controlling the robot, launch the `teleop_twist_joy` node.
+To use a joystick (gamepad) controlling the LEGO car, launch the `teleop_twist_joy` node.
 
 Each gamepad has an enable button. Press it while twisting the joystick to control the robot. On the PS5, it is the "PS" button.  
 

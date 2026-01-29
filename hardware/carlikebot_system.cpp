@@ -12,47 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-// The hardware components realize communication to physical hardware and represent its abstraction in the 
-// ros2_control framework. The components have to be exported as plugins and the Resource Manager dynamically
-// loads those plugins and manages their lifecycle.
-//
-// There are three basic types of components: Actuator, Sensor and System. 
-// System: Complex (multi-DOF) robotic hardware like industrial robots.
-// Actuator: Simple (1 DOF) robotic hardware like motors, valves, and similar. An actuator implementation is related to only one joint. 
-// Sensor: Robotic hardware is used for sensing its environment. 
-//
-// The ros2_control framework provides a set of hardware interface types that can be used to implement a hardware component 
-// for a specific robot or device: Joints, Sensors, GPIOs
-// Joints: 
-// <joint>-tag groups the interfaces associated with the joints of physical robots and actuators. 
-// They have command and state interfaces to set the goal values for hardware and read its current state.
-// The State interfaces of joints can be published as a ROS topic by means of the joint_state_broadcaster
-// 
-// <ros2_control name="RRBotSystemMutipleGPIOs" type="system">
-//  <hardware>
-//    <plugin>ros2_control_demo_hardware/RRBotSystemPositionOnlyHardware</plugin>
-//    <param name="example_param_hw_start_duration_sec">2.0</param>
-//    <param name="example_param_hw_stop_duration_sec">3.0</param>
-//    <param name="example_param_hw_slowdown">2.0</param>
-//  </hardware>
-//  <joint name="joint1">
-//    <command_interface name="position">
-//      <param name="min">-1</param>
-//      <param name="max">1</param>
-//    </command_interface>
-//    <state_interface name="position"/>
-//  </joint>
-//  <gpio name="flange_digital_IOs">
-//    <command_interface name="digital_output1"/>
-//    <state_interface name="digital_output1"/>    <!-- current state of the output -->
-//    <command_interface name="digital_output2"/>
-//    <state_interface name="digital_output2"/>
-//    <state_interface name="digital_input1"/>
-//    <state_interface name="digital_input2"/>
-//  </gpio>
-// </ros2_control>
-// 
 // References:
+// https://control.ros.org/humble/doc/getting_started/getting_started.html
 // https://control.ros.org/humble/doc/ros2_control/hardware_interface/doc/hardware_interface_types_userdoc.html
 // https://control.ros.org/humble/doc/ros2_control/hardware_interface/doc/writing_new_hardware_component.html
 
