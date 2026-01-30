@@ -8,7 +8,7 @@
         <plugin>audi_etron/CarlikeBotSystemHardware</plugin>
         <!-- LEGO Motor Control Parameters -->
         <!-- Maximum power for traction motors (0-100), default 80  -->
-        <param name="max_traction_power">80.0</param>
+        <param name="max_traction_power">90.0</param>
         <!-- Maximum power for steering motor (0-100), default 50. 
              Caps the motor power sent to the steering motor since steering needs smooth, 
              precise control, not maximum power.-->

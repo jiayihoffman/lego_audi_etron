@@ -175,3 +175,8 @@ sudo apt install ros-${ROS_DISTRO}-teleop-twist-joy
 # launch the teleop-twist-joy 
 ros2 launch teleop_twist_joy teleop-launch.py joy_config:='ps3' publish_stamped_twist:=true
 ```
+
+### Troubleshooting
+
+For common issues (e.g. joystick timestamp errors when using Mac + Raspberry Pi) and time-sync steps, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md).
+
