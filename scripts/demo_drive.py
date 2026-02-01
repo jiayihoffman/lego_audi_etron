@@ -37,7 +37,7 @@ PUB_RATE = 50  # Hz — match controller; fresh stamp every message
 def get_dance_sequence():
     """(linear_x, angular_z, duration_sec, description) for each move."""
     return [
-        (LINEAR_X, 0.0, D_LONG, "Forward"),
+        (LINEAR_X, 0.0, D_MED, "Forward"),
         (LINEAR_X_SLOW, ANGULAR_Z, D_SHORT, "Turn left"),
         (-LINEAR_X_SLOW, ANGULAR_Z, D_MED, "Back left"),
         (LINEAR_X_SLOW, -ANGULAR_Z, D_LONG, "Turn right"),
@@ -46,8 +46,8 @@ def get_dance_sequence():
         (LINEAR_X_SLOW, -ANGULAR_Z, D_LONG, "Turn right"),
         (LINEAR_X_STRAIGHTEN, ANGULAR_Z_STRAIGHTEN, D_STRAIGHTEN, "Straighten wheel"),
         (LINEAR_X, 0.0, D_SHORT, "Forward"),
-        (LINEAR_X_SLOW, ANGULAR_Z, D_SHORT, "Turn left"),
-        (-LINEAR_X_SLOW, ANGULAR_Z, D_MED, "Back left"),
+        # (LINEAR_X_SLOW, ANGULAR_Z, D_SHORT, "Turn left"),
+        # (-LINEAR_X_SLOW, ANGULAR_Z, D_MED, "Back left"),
         (LINEAR_X_SLOW, -ANGULAR_Z, D_LONG, "Turn right"),
         (LINEAR_X_STRAIGHTEN, ANGULAR_Z_STRAIGHTEN, D_STRAIGHTEN, "Straighten wheel"),
         (LINEAR_X, 0.0, D_SHORT, "Forward"),
