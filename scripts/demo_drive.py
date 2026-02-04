@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
+# Copyright (c) 2026 Jiayi Hoffman.
 #
-# LEGO car demo: dance — forward, turn left/right, back left, back right.
+# LEGO car demo.
 # Publishes TwistStamped to /cmd_vel at a fixed rate with fresh timestamp on
-# every message (no timeout). Switches moves in the same loop for smooth
-# transitions like joystick control.
+# every message (no timeout).
 #
 # Usage (after sourcing ROS2):
 #   ./scripts/demo_drive.py
@@ -46,8 +46,6 @@ def get_dance_sequence():
         (LINEAR_X_SLOW, -ANGULAR_Z, D_LONG, "Turn right"),
         (LINEAR_X_STRAIGHTEN, ANGULAR_Z_STRAIGHTEN, D_STRAIGHTEN, "Straighten wheel"),
         (LINEAR_X, 0.0, D_SHORT, "Forward"),
-        # (LINEAR_X_SLOW, ANGULAR_Z, D_SHORT, "Turn left"),
-        # (-LINEAR_X_SLOW, ANGULAR_Z, D_MED, "Back left"),
         (LINEAR_X_SLOW, -ANGULAR_Z, D_LONG, "Turn right"),
         (LINEAR_X_STRAIGHTEN, ANGULAR_Z_STRAIGHTEN, D_STRAIGHTEN, "Straighten wheel"),
         (LINEAR_X, 0.0, D_SHORT, "Forward"),

@@ -1,4 +1,6 @@
 #!/bin/bash
+# Copyright (c) 2026 Jiayi Hoffman.
+#
 # Start the LEGO robot Docker container
 # Supports both local images and Docker Hub images
 

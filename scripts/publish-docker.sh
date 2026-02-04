@@ -1,4 +1,6 @@
 #!/bin/bash
+# Copyright (c) 2026 Jiayi Hoffman.
+#
 # Build and publish Docker image to Docker Hub
 
 set -e  # Exit on error

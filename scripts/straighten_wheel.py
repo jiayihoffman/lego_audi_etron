@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Copyright (c) 2026 Jiayi Hoffman.
 #
 # Helper script: straighten the steering wheel.
 # By default straightens from right turn (turns left to center).
